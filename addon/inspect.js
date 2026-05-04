@@ -69,6 +69,7 @@ class Model {
     this.trustpilotConfig = TRUSTPILOT_CONFIG;
     this.trustpilotOperator = null;
     this.trustpilotContact = null;
+    this.trustpilotAccount = null;
     this.trustpilotStatus = null;
     this.trustpilotSendingTemplateId = null;
     this.recordName;
@@ -178,11 +179,13 @@ class Model {
     let caseData = this.recordData || {};
 
     let recipientEmail = firstNonEmpty(
+      this.trustpilotAccount?.dtt_email__c,
       this.trustpilotContact?.Email,
       caseData.ContactEmail,
       caseData.SuppliedEmail
     );
     let recipientName = firstNonEmpty(
+      this.trustpilotAccount?.dtt_clientname__c,
       this.trustpilotContact?.Name,
       caseData.ContactName,
       caseData.SuppliedName
@@ -239,6 +242,7 @@ class Model {
       return;
     }
     this.loadTrustpilotOperatorContext();
+    this.loadTrustpilotAccountContext();
     this.loadTrustpilotContactContext();
   }
   loadTrustpilotOperatorContext() {
@@ -264,6 +268,20 @@ class Model {
       "retrieving trustpilot case contact",
       sfConn.rest("/services/data/v" + apiVersion + "/query/?q=" + encodeURIComponent(query)).then(res => {
         this.trustpilotContact = res.records && res.records.length > 0 ? res.records[0] : null;
+      })
+    );
+  }
+  loadTrustpilotAccountContext() {
+    let accountId = firstNonEmpty(this.recordData?.AccountId);
+    if (!accountId) {
+      this.trustpilotAccount = null;
+      return;
+    }
+    let query = "SELECT Id, Name, dtt_email__c, dtt_clientname__c FROM Account WHERE Id = '" + accountId + "' LIMIT 1";
+    this.spinFor(
+      "retrieving trustpilot case account",
+      sfConn.rest("/services/data/v" + apiVersion + "/query/?q=" + encodeURIComponent(query)).then(res => {
+        this.trustpilotAccount = res.records && res.records.length > 0 ? res.records[0] : null;
       })
     );
   }
@@ -668,6 +686,7 @@ class Model {
     this.recordData = null;
     this.layoutInfo = null;
     this.trustpilotContact = null;
+    this.trustpilotAccount = null;
     this.trustpilotStatus = null;
   }
   startLoading() {
