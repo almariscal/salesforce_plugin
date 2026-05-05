@@ -277,11 +277,10 @@ class Model {
       this.trustpilotAccount = null;
       return;
     }
-    let query = "SELECT Id, Name, dtt_email__c, dtt_clientname__c FROM Account WHERE Id = '" + accountId + "' LIMIT 1";
     this.spinFor(
       "retrieving trustpilot case account",
-      sfConn.rest("/services/data/v" + apiVersion + "/query/?q=" + encodeURIComponent(query)).then(res => {
-        this.trustpilotAccount = res.records && res.records.length > 0 ? res.records[0] : null;
+      sfConn.rest("/services/data/v" + apiVersion + "/sobjects/Account/" + accountId).then(res => {
+        this.trustpilotAccount = res || null;
       })
     );
   }
