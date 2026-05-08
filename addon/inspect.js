@@ -29,6 +29,16 @@ function uniqueTrimmed(values) {
   return Array.from(new Set(asArray(values).map(v => (v == null ? "" : String(v).trim())).filter(Boolean)));
 }
 
+function normalizeFieldValue(value) {
+  if (value === undefined || value === null) {
+    return "";
+  }
+  if (typeof value === "string") {
+    return value.trim();
+  }
+  return String(value).trim();
+}
+
 class Model {
   constructor(sfHost) {
     this.reactCallback = null;
@@ -174,20 +184,33 @@ class Model {
       this.trustpilotConfig?.invitation?.businessUserId
     );
   }
+  getTrustpilotFieldValue(fieldApiName) {
+    let fromRecordData = normalizeFieldValue(this.recordData?.[fieldApiName]);
+    if (fromRecordData) {
+      return fromRecordData;
+    }
+    // Fallback to what inspector already resolved in the field table.
+    let row = this.fieldRows?.getRow(fieldApiName);
+    let fromFieldRow = normalizeFieldValue(row?.dataTypedValue);
+    if (fromFieldRow) {
+      return fromFieldRow;
+    }
+    return "";
+  }
   buildTrustpilotPreview(templateId = "") {
     let routing = this.getTrustpilotOperatorRouting() || {};
     let defaults = this.trustpilotConfig?.defaults || {};
     let recordData = this.recordData || {};
 
     let recipientEmail = firstNonEmpty(
-      recordData.dtt_email__c,
+      this.getTrustpilotFieldValue("dtt_email__c"),
       this.trustpilotAccount?.dtt_email__c,
       this.trustpilotContact?.Email,
       recordData.ContactEmail,
       recordData.SuppliedEmail
     );
     let recipientName = firstNonEmpty(
-      recordData.dtt_clientname__c,
+      this.getTrustpilotFieldValue("dtt_clientname__c"),
       this.trustpilotAccount?.dtt_clientname__c,
       this.trustpilotContact?.Name,
       recordData.ContactName,
