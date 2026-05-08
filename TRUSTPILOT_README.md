@@ -8,6 +8,70 @@ Todo se configura en:
 
 `addon/trustpilot-config.js`
 
+## Configuracion rapida (tal cual)
+
+Edita este archivo:
+
+- `addon/trustpilot-config.js`
+
+Que poner en cada bloque:
+
+1. `auth`
+- `url`: token endpoint (normalmente ya viene)
+- `token`: tu `client_id`
+- `secret`: tu `client_secret`
+- `grantType`: `client_credentials` (si usais ese flujo)
+
+1. `invitation`
+- `url`: endpoint de invitacion (normalmente ya viene)
+- `businessUnitId`: ID de la business unit de Trustpilot
+- `businessUserId`: user id de Trustpilot (cabecera `x-business-user-id`)
+- `replyTo`: email de respuesta (opcional)
+- `locale`: por ejemplo `es-ES`
+
+1. `templates`
+- Anade cada plantilla con su `templateId`:
+- `{ key, label, templateId }`
+- Cada fila genera un boton en la UI.
+
+1. `operators` (opcional, por usuario de Salesforce)
+- Clave = UserId Salesforce (`005...`)
+- Puedes sobreescribir por operador:
+- `trustpilotBusinessUserId`
+- `communicationId` (se mapea a `locationId`)
+- `tags`
+
+Ejemplo rapido:
+
+```js
+auth: {
+  url: "https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/accesstoken",
+  token: "TU_CLIENT_ID",
+  secret: "TU_CLIENT_SECRET",
+  grantType: "client_credentials",
+  scope: "",
+  refreshSkewSeconds: 120,
+  defaultTtlSeconds: 3300
+},
+invitation: {
+  url: "https://invitations-api.trustpilot.com/v1/private/business-units/{businessUnitId}/email-invitations",
+  businessUnitId: "TU_BUSINESS_UNIT_ID",
+  businessUserId: "TU_TRUSTPILOT_USER_ID",
+  replyTo: "soporte@tuempresa.com",
+  locale: "es-ES"
+},
+templates: [
+  { key: "incidencia", label: "Incidencia", templateId: "TEMPLATE_ID_1" },
+  { key: "contratacion", label: "Ayuda contratacion", templateId: "TEMPLATE_ID_2" }
+]
+```
+
+Despues:
+
+1. Guarda el archivo.
+2. `brave://extensions` -> `Actualizar`.
+3. Prueba desde un `Account`.
+
 ## Donde poner tokens y secretos
 
 En `addon/trustpilot-config.js`, bloque `auth`:
