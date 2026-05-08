@@ -189,11 +189,32 @@ class Model {
     if (fromRecordData) {
       return fromRecordData;
     }
-    // Fallback to what inspector already resolved in the field table.
-    let row = this.fieldRows?.getRow(fieldApiName);
-    let fromFieldRow = normalizeFieldValue(row?.dataTypedValue);
-    if (fromFieldRow) {
-      return fromFieldRow;
+    let recordData = this.recordData || {};
+    let targetName = String(fieldApiName || "").toLowerCase();
+    for (let [key, value] of Object.entries(recordData)) {
+      if (String(key).toLowerCase() === targetName) {
+        let caseInsensitiveValue = normalizeFieldValue(value);
+        if (caseInsensitiveValue) {
+          return caseInsensitiveValue;
+        }
+      }
+    }
+    // Fallback to the same source used by the bottom table:
+    // find row by Field API Name (case-insensitive) and read sortKey("value").
+    let rows = this.fieldRows?.rows || [];
+    for (let row of rows) {
+      if (String(row?.fieldName || "").toLowerCase() === targetName) {
+        let fromTableValue = normalizeFieldValue(row.sortKey("value"));
+        if (fromTableValue) {
+          return fromTableValue;
+        }
+      }
+    }
+    // Last fallback: direct row lookup (exact key).
+    let directRow = this.fieldRows?.getRow(fieldApiName);
+    let fromDirectRow = normalizeFieldValue(directRow?.sortKey("value"));
+    if (fromDirectRow) {
+      return fromDirectRow;
     }
     return "";
   }
