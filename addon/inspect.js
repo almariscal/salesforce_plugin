@@ -2157,12 +2157,10 @@ class TrustpilotPanel extends React.Component {
     let preview = model.buildTrustpilotPreview(previewTemplateId);
     let trustpilotBusinessUserId = model.getTrustpilotBusinessUserId();
     let payloadPreview = {
-      headers: {
-        "x-business-user-id": trustpilotBusinessUserId || "(not set)"
-      },
-      replyTo: preview.replyTo || undefined,
+      headers: {"x-business-user-id": trustpilotBusinessUserId || "(not set)"},
+      replyTo: preview.replyTo || "",
       locale: preview.locale,
-      locationId: preview.communicationId || undefined,
+      locationId: preview.communicationId || "",
       referenceNumber: preview.referenceId,
       consumerName: preview.recipientName,
       consumerEmail: preview.recipientEmail,
@@ -2172,6 +2170,18 @@ class TrustpilotPanel extends React.Component {
         tags: preview.tags
       }
     };
+
+    const breakdownRows = [
+      ["Consumer Email", payloadPreview.consumerEmail || "(empty)"],
+      ["Consumer Name", payloadPreview.consumerName || "(empty)"],
+      ["Reference Number", payloadPreview.referenceNumber || "(empty)"],
+      ["Template ID", payloadPreview.serviceReviewInvitation.templateId || "(empty)"],
+      ["Locale", payloadPreview.locale || "(empty)"],
+      ["Reply To", payloadPreview.replyTo || "(empty)"],
+      ["Location ID", payloadPreview.locationId || "(empty)"],
+      ["Tags", payloadPreview.serviceReviewInvitation.tags?.length ? payloadPreview.serviceReviewInvitation.tags.join(", ") : "(empty)"],
+      ["x-business-user-id", payloadPreview.headers["x-business-user-id"] || "(empty)"]
+    ];
 
     return h("div", {className: "trustpilot-panel"},
       h("div", {className: "trustpilot-panel-title"}, "Trustpilot (MVP beta)"),
@@ -2191,7 +2201,18 @@ class TrustpilotPanel extends React.Component {
       model.trustpilotStatus ? h("div", {className: "trustpilot-status " + (model.trustpilotStatus.type === "success" ? "trustpilot-status-success" : "trustpilot-status-error")},
         model.trustpilotStatus.message
       ) : null,
-      h("pre", {className: "trustpilot-preview"}, JSON.stringify(payloadPreview, null, 2))
+      h("div", {className: "trustpilot-breakdown"},
+        breakdownRows.map(([label, value]) =>
+          h("div", {className: "trustpilot-breakdown-row", key: label},
+            h("div", {className: "trustpilot-breakdown-label"}, label),
+            h("div", {className: "trustpilot-breakdown-value quick-select"}, value)
+          )
+        )
+      ),
+      h("details", {className: "trustpilot-raw"},
+        h("summary", {}, "Ver JSON del payload"),
+        h("pre", {className: "trustpilot-preview"}, JSON.stringify(payloadPreview, null, 2))
+      )
     );
   }
 }

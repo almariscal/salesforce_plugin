@@ -79,7 +79,9 @@
     if (!state.recordId || !state.sfHost) {
       return;
     }
-    location.href = getInspectUrl();
+    const fullUrl = chrome.runtime.getURL(getInspectUrl());
+    window.open(fullUrl, "_blank", "noopener");
+    parent.postMessage({insextClosePopup: true}, "*");
   }
 
   function closePopup(e) {

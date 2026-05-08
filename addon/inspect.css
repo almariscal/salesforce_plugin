@@ -845,15 +845,55 @@ th.field-actions.border-cell > button.actions-button {
 }
 
 .trustpilot-preview {
-  margin: 0;
+  margin: 6px 0 0;
   background: #f4f6f9;
   border: 1px solid #d8dde6;
   border-radius: 4px;
   padding: 8px;
-  max-height: 220px;
+  max-height: 320px;
   overflow: auto;
   font-size: 12px;
   line-height: 1.35;
+}
+
+.trustpilot-breakdown {
+  margin-top: 8px;
+  border: 1px solid #d8dde6;
+  border-radius: 6px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.trustpilot-breakdown-row {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  border-bottom: 1px solid #eef2f7;
+}
+
+.trustpilot-breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.trustpilot-breakdown-label {
+  padding: 8px 10px;
+  font-weight: 700;
+  background: #f8fafc;
+  border-right: 1px solid #eef2f7;
+}
+
+.trustpilot-breakdown-value {
+  padding: 8px 10px;
+  word-break: break-word;
+}
+
+.trustpilot-raw {
+  margin-top: 8px;
+}
+
+.trustpilot-raw summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #1d4ed8;
 }
 
 @media (max-width: 768px) {
@@ -861,7 +901,16 @@ th.field-actions.border-cell > button.actions-button {
     margin: 8px 8px 0;
   }
 
+  .trustpilot-breakdown-row {
+    grid-template-columns: 1fr;
+  }
+
+  .trustpilot-breakdown-label {
+    border-right: none;
+    border-bottom: 1px solid #eef2f7;
+  }
+
   .trustpilot-preview {
-    max-height: 180px;
+    max-height: 220px;
   }
 }
