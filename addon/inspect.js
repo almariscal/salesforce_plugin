@@ -246,7 +246,7 @@ class Model {
       "UNKNOWN_CUSTOMER"
     );
     let userId = firstNonEmpty(this.trustpilotOperator?.id, "UNKNOWN_USER");
-    let referenceId = "ATC_" + customerId + "_" + userId;
+    let referenceId = customerId + "_" + userId + "_ATC";
     let tags = uniqueTrimmed([...(defaults.tags || []), ...(routing.tags || [])]);
     let communicationId = firstNonEmpty(routing.communicationId, defaults.communicationId);
     let templateName = this.getTrustpilotTemplates().find(t => t.templateId === templateId)?.label || "";
