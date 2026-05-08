@@ -2,14 +2,23 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="styles/slds/slds.css">
     <link rel="stylesheet" href="popup.css">
-    <link rel="stylesheet" href="flags.css">
-    <script src="react.js"></script>
-    <script src="react-dom.js"></script>
-    <script type="module" src="popup.js"></script>
+    <script defer src="popup.js"></script>
   </head>
   <body>
-    <div id="root"></div>
+    <main class="tp-popup">
+      <h1>ATC Trustpilot Sender</h1>
+      <p class="subtitle">Envio de invitaciones Trustpilot desde Account</p>
+
+      <div class="meta">
+        <div><strong>Host:</strong> <span id="sf-host">-</span></div>
+        <div><strong>Contexto:</strong> <span id="sf-context">-</span></div>
+      </div>
+
+      <p id="sf-status" class="status"></p>
+
+      <button id="open-trustpilot" class="btn btn-primary" disabled>Abrir Envio Trustpilot</button>
+      <button id="close-popup" class="btn">Cerrar</button>
+    </main>
   </body>
 </html>

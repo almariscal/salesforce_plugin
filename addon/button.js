@@ -24,7 +24,7 @@ function initButton(sfHost, inInspector) {
   btn.className = "insext-btn";
   btn.tabIndex = 0;
   btn.accessKey = "i";
-  btn.title = "Show Salesforce details (Alt+I / Shift+Alt+I)";
+  btn.title = "ATC Trustpilot Sender (Alt+I / Shift+Alt+I)";
   rootEl.appendChild(btn);
   loadPopup(sfHost);
   document.body.appendChild(rootEl);

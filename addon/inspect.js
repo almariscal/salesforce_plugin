@@ -1,6 +1,5 @@
 /* global React ReactDOM */
 import {sfConn, apiVersion} from "./inspector.js";
-import {copyToClipboard} from "./data-load.js";
 /* global initButton */
 import {getObjectSetupLinks, getFieldSetupLinks} from "./setup-links.js";
 import {TRUSTPILOT_MVP_CONFIG} from "./trustpilot-config.js";
@@ -37,6 +36,23 @@ function normalizeFieldValue(value) {
     return value.trim();
   }
   return String(value).trim();
+}
+
+function copyToClipboard(text) {
+  if (navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(() => {});
+    return;
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand("copy");
+  } catch (e) {
+    // no-op
+  }
+  document.body.removeChild(textarea);
 }
 
 class Model {

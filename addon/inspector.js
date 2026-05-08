@@ -2,7 +2,7 @@ export let defaultApiVersion = "65.0";
 export let apiVersion = localStorage.getItem("apiVersion") == null ? defaultApiVersion : localStorage.getItem("apiVersion");
 
 export let sessionError;
-const clientId = "Salesforce Inspector Reloaded";
+const clientId = "ATC Trustpilot Sender";
 
 export let sfConn = {
 

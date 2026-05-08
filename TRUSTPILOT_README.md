@@ -1,6 +1,6 @@
 # Trustpilot MVP - Configuracion Rapida
 
-Este documento explica donde configurar todo lo necesario para el flujo de invitaciones Trustpilot desde Salesforce Inspector.
+Este documento explica donde configurar todo lo necesario para el flujo de invitaciones Trustpilot desde ATC Trustpilot Sender.
 
 ## Archivo principal de configuracion
 
@@ -110,7 +110,7 @@ Valores recomendados:
 
 - `senderEmail` y `senderName` no se envian en el payload a Trustpilot.
 - El `referenceId` se construye como:
-  `ATC_<idcliente>_<idcaso>_<idusuario>`
+  `<idcliente>_<idusuario>_ATC`
 - El payload de invitacion se envia en formato Trustpilot `Create invitation(s)`:
   `referenceNumber`, `consumerName`, `consumerEmail`, `type`, `serviceReviewInvitation.templateId/tags`.
 - La validacion de faltantes se muestra solo cuando el operador pulsa "Enviar resena...".
