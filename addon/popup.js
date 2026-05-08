@@ -1884,7 +1884,7 @@ class AllDataSelection extends React.PureComponent {
   render() {
     let {sfHost, showDetailsSupported, contextRecordId, selectedValue, linkTarget, recordIdDetails, isFieldsPresent, eventMonitorHref} = this.props;
     let {flowDefinitionId} = this.state;
-    let isCaseRecord = selectedValue?.sobject?.name === "Case" && !!selectedValue?.recordId;
+    let isAccountRecord = selectedValue?.sobject?.name === "Account" && !!selectedValue?.recordId;
     // Show buttons for the available APIs.
     let buttons = selectedValue.sobject.availableApis ? Array.from(selectedValue.sobject.availableApis) : [];
     buttons.sort();
@@ -1968,7 +1968,7 @@ class AllDataSelection extends React.PureComponent {
           ? h("a", {href: this.getGeneratePackageUrl(), target: linkTarget, className: "button page-button slds-button slds-button_neutral slds-m-top_xx-small slds-m-bottom_xx-small"}, "Generate package.xml") : null,
         flowDefinitionId
           ? h("a", {href: this.redirectToFlowVersions(), target: linkTarget, className: "button page-button slds-button slds-button_neutral slds-m-top_xx-small slds-m-bottom_xx-small"}, "Flow Versions") : null,
-        isCaseRecord ? h("a", {
+        isAccountRecord ? h("a", {
           ref: "trustpilotBtn",
           href: this.getTrustpilotUrl(),
           target: linkTarget,

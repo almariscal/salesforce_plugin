@@ -1,6 +1,6 @@
 export const TRUSTPILOT_MVP_CONFIG = {
   // Restrict Trustpilot panel to these object API names.
-  onlyForObjects: ["Case"],
+  onlyForObjects: ["Account"],
 
   // Step 1: Token endpoint (token + secret -> bearer token).
   auth: {

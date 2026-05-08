@@ -137,15 +137,16 @@ class Model {
   title() {
     return "ALL DATA: " + this.objectName() + " " + this.recordHeading();
   }
-  isCaseRecord() {
-    return String(this.sobjectName || this.objectName() || "").toLowerCase() === "case";
+  isTrustpilotRecordObject() {
+    let objectName = String(this.sobjectName || this.objectName() || "").toLowerCase();
+    let enabledObjects = asArray(this.trustpilotConfig?.onlyForObjects).map(item => String(item).toLowerCase());
+    return enabledObjects.length === 0 || enabledObjects.includes(objectName);
   }
   isTrustpilotEnabledForCurrentRecord() {
-    if (!this.isCaseRecord() || !this.recordId) {
+    if (!this.recordId) {
       return false;
     }
-    let enabledObjects = asArray(this.trustpilotConfig?.onlyForObjects).map(item => String(item).toLowerCase());
-    return enabledObjects.length === 0 || enabledObjects.includes("case");
+    return this.isTrustpilotRecordObject();
   }
   getTrustpilotTemplates() {
     return asArray(this.trustpilotConfig?.templates)
@@ -176,29 +177,32 @@ class Model {
   buildTrustpilotPreview(templateId = "") {
     let routing = this.getTrustpilotOperatorRouting() || {};
     let defaults = this.trustpilotConfig?.defaults || {};
-    let caseData = this.recordData || {};
+    let recordData = this.recordData || {};
 
     let recipientEmail = firstNonEmpty(
+      recordData.dtt_email__c,
       this.trustpilotAccount?.dtt_email__c,
       this.trustpilotContact?.Email,
-      caseData.ContactEmail,
-      caseData.SuppliedEmail
+      recordData.ContactEmail,
+      recordData.SuppliedEmail
     );
     let recipientName = firstNonEmpty(
+      recordData.dtt_clientname__c,
       this.trustpilotAccount?.dtt_clientname__c,
       this.trustpilotContact?.Name,
-      caseData.ContactName,
-      caseData.SuppliedName
+      recordData.ContactName,
+      recordData.SuppliedName
     );
     let customerId = firstNonEmpty(
-      caseData.ContactId,
+      recordData.Id,
+      recordData.AccountId,
+      recordData.ContactId,
       this.trustpilotContact?.Id,
-      caseData.AccountId,
+      this.trustpilotAccount?.Id,
       "UNKNOWN_CUSTOMER"
     );
-    let caseId = firstNonEmpty(caseData.Id, this.recordId, "UNKNOWN_CASE");
     let userId = firstNonEmpty(this.trustpilotOperator?.id, "UNKNOWN_USER");
-    let referenceId = "ATC_" + customerId + "_" + caseId + "_" + userId;
+    let referenceId = "ATC_" + customerId + "_" + userId;
     let tags = uniqueTrimmed([...(defaults.tags || []), ...(routing.tags || [])]);
     let communicationId = firstNonEmpty(routing.communicationId, defaults.communicationId);
     let templateName = this.getTrustpilotTemplates().find(t => t.templateId === templateId)?.label || "";
@@ -211,8 +215,8 @@ class Model {
       replyTo: firstNonEmpty(this.trustpilotConfig?.invitation?.replyTo),
       templateId: firstNonEmpty(templateId),
       templateName,
-      caseId,
-      caseNumber: firstNonEmpty(caseData.CaseNumber),
+      caseId: firstNonEmpty(recordData.Id, this.recordId),
+      caseNumber: firstNonEmpty(recordData.CaseNumber),
       customerId,
       operatorId: firstNonEmpty(this.trustpilotOperator?.id),
       operatorName: firstNonEmpty(this.trustpilotOperator?.name),
@@ -242,8 +246,15 @@ class Model {
       return;
     }
     this.loadTrustpilotOperatorContext();
-    this.loadTrustpilotAccountContext();
-    this.loadTrustpilotContactContext();
+    // For Account flow, data is already in the current record.
+    let objectName = String(this.sobjectName || this.objectName() || "").toLowerCase();
+    if (objectName === "account") {
+      this.trustpilotAccount = this.recordData || null;
+      this.trustpilotContact = null;
+    } else {
+      this.loadTrustpilotAccountContext();
+      this.loadTrustpilotContactContext();
+    }
   }
   loadTrustpilotOperatorContext() {
     this.spinFor(
