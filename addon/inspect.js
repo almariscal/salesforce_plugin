@@ -262,7 +262,7 @@ class Model {
       "UNKNOWN_CUSTOMER"
     );
     let userId = firstNonEmpty(this.trustpilotOperator?.id, "UNKNOWN_USER");
-    let referenceId = customerId + "_" + userId + "_ATC";
+    let referenceBaseId = customerId + "_" + userId + "_ATC";
     let tags = uniqueTrimmed([...(defaults.tags || []), ...(routing.tags || [])]);
     let communicationId = firstNonEmpty(routing.communicationId, defaults.communicationId);
     let templateName = this.getTrustpilotTemplates().find(t => t.templateId === templateId)?.label || "";
@@ -270,7 +270,7 @@ class Model {
     return {
       recipientEmail,
       recipientName,
-      referenceId,
+      referenceBaseId,
       locale: firstNonEmpty(this.trustpilotConfig?.invitation?.locale, "es-ES"),
       replyTo: firstNonEmpty(this.trustpilotConfig?.invitation?.replyTo),
       templateId: firstNonEmpty(templateId),
@@ -298,7 +298,7 @@ class Model {
     if (!preview.templateId) missing.push("templateId");
     if (!preview.recipientEmail) missing.push("recipientEmail");
     if (!preview.recipientName) missing.push("recipientName");
-    if (!preview.referenceId) missing.push("referenceId");
+    if (!preview.referenceBaseId) missing.push("referenceId");
     return missing;
   }
   refreshTrustpilotContext() {
@@ -465,11 +465,13 @@ class Model {
     try {
       let accessToken = await this.fetchTrustpilotAccessToken();
       let trustpilotBusinessUserId = this.getTrustpilotBusinessUserId();
+      let sendTimestamp = Date.now();
+      let referenceNumberWithTimestamp = preview.referenceBaseId + "_" + sendTimestamp;
       let payload = {
         replyTo: preview.replyTo || undefined,
         locale: preview.locale,
         locationId: preview.communicationId || undefined,
-        referenceNumber: preview.referenceId,
+        referenceNumber: referenceNumberWithTimestamp,
         consumerName: preview.recipientName,
         consumerEmail: preview.recipientEmail,
         type: "email",
@@ -2161,7 +2163,7 @@ class TrustpilotPanel extends React.Component {
       replyTo: preview.replyTo || "",
       locale: preview.locale,
       locationId: preview.communicationId || "",
-      referenceNumber: preview.referenceId,
+      referenceNumber: preview.referenceBaseId,
       consumerName: preview.recipientName,
       consumerEmail: preview.recipientEmail,
       type: "email",
