@@ -28,6 +28,10 @@ This repo intentionally avoids legacy “all-in-one inspector” complexity and 
 
 ## Product snapshot
 
+## Security
+
+- [`SECURITY_AUDIT.md`](SECURITY_AUDIT.md) - Auditoria de seguridad (CISO), riesgos de fuga de datos y plan de mitigacion.
+
 ### What you get
 
 - Floating launcher button inside Salesforce pages.

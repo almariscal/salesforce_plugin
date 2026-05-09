@@ -17,6 +17,7 @@ if (document.querySelector("body.sfdcBody, body.ApexCSIPage, #auraLoadingBox, #s
 }
 
 function initButton(sfHost, inInspector) {
+  const extensionOrigin = new URL(chrome.runtime.getURL("")).origin;
   let rootEl = document.createElement("div");
   rootEl.id = "insext";
   let btn = document.createElement("div");
@@ -228,7 +229,7 @@ function initButton(sfHost, inInspector) {
     resetPopupClass(getOrientation("localStorage"));
     popupEl.src = popupSrc;
     addEventListener("message", e => {
-      if (e.source != popupEl.contentWindow) {
+      if (e.source != popupEl.contentWindow || e.origin !== extensionOrigin) {
         return;
       }
       if (e.data.insextInitRequest) {
@@ -250,7 +251,7 @@ function initButton(sfHost, inInspector) {
           inDevConsole: !!document.querySelector("body.ApexCSIPage"),
           inLightning: !!document.querySelector("#auraLoadingBox"),
           inInspector,
-        }, "*");
+        }, extensionOrigin);
       }
 
       togglePopup(e.data.insextOpenPopup, e.data.insextClosePopup);
@@ -316,7 +317,7 @@ function initButton(sfHost, inInspector) {
       popupEl.contentWindow.postMessage({insextUpdateRecordId: true,
         locationHref: location.href,
         isFieldsPresent
-      }, "*");
+      }, extensionOrigin);
       rootEl.classList.add("insext-active");
       // These event listeners are only enabled when the popup is active to avoid interfering with Salesforce when not using the inspector
       addEventListener("click", outsidePopupClick);

@@ -1066,7 +1066,7 @@ class FieldRowList extends RowList {
 
     // Only include usage column if objectType parameter is present
     let defaultColumns = ["name", "label", "type"];
-    if (!new URLSearchParams(location.search.slice(1)).get("recordId")) {
+    if (new URLSearchParams(location.search.slice(1)).get("recordContext") !== "1") {
       defaultColumns.push("usage");
     }
 
@@ -2795,25 +2795,33 @@ class DetailsBox extends React.Component {
 }
 
 {
-
   let args = new URLSearchParams(location.search.slice(1));
   let sfHost = args.get("host");
+  let contextKey = args.get("contextKey");
+  let readContext = contextKey
+    ? chrome.storage.session.get(contextKey).then(items => {
+      const context = items?.[contextKey] || null;
+      // One-time context to avoid stale leaks in browser storage.
+      chrome.storage.session.remove(contextKey).catch(() => {});
+      return context;
+    }).catch(() => null)
+    : Promise.resolve(null);
+
   initButton(sfHost, true);
   sfConn.getSession(sfHost).then(() => {
-
-    let root = document.getElementById("root");
-    let model = new Model(sfHost);
-    model.sobjectName = args.get("objectType");
-    model.useToolingApi = args.has("useToolingApi");
-    model.recordId = args.get("recordId");
-    model.startLoading();
-    model.reactCallback = cb => {
-      ReactDOM.render(h(App, {model}), root, cb);
-    };
-    ReactDOM.render(h(App, {model}), root);
-
+    readContext.then(context => {
+      let root = document.getElementById("root");
+      let model = new Model(sfHost);
+      model.sobjectName = context?.objectType || args.get("objectType");
+      model.useToolingApi = args.has("useToolingApi");
+      model.recordId = context?.recordId || args.get("recordId");
+      model.startLoading();
+      model.reactCallback = cb => {
+        ReactDOM.render(h(App, {model}), root, cb);
+      };
+      ReactDOM.render(h(App, {model}), root);
+    });
   });
-
 }
 
 {

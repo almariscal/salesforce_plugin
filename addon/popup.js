@@ -1,9 +1,18 @@
 (function() {
+  const parentOrigin = (() => {
+    try {
+      return new URL(document.referrer).origin;
+    } catch (e) {
+      return null;
+    }
+  })();
+
   const state = {
     sfHost: null,
     locationHref: "",
     objectType: "",
-    recordId: ""
+    recordId: "",
+    contextKey: ""
   };
 
   const els = {
@@ -27,8 +36,18 @@
     const args = new URLSearchParams();
     args.set("host", state.sfHost || "");
     args.set("objectType", "Account");
-    args.set("recordId", state.recordId);
+    args.set("recordContext", state.recordId ? "1" : "0");
+    if (state.contextKey) {
+      args.set("contextKey", state.contextKey);
+    }
     return "inspect.html?" + args.toString();
+  }
+
+  function postToParent(payload) {
+    if (!parentOrigin) {
+      return;
+    }
+    parent.postMessage(payload, parentOrigin);
   }
 
   function render() {
@@ -52,15 +71,15 @@
   }
 
   function postInit() {
-    parent.postMessage({
+    postToParent({
       insextInitRequest: true,
       iFrameLocalStorage: {}
-    }, "*");
-    parent.postMessage({insextLoaded: true}, "*");
+    });
+    postToParent({insextLoaded: true});
   }
 
   function onMessage(e) {
-    if (e.source !== parent || !e.data) {
+    if (!parentOrigin || e.source !== parent || e.origin !== parentOrigin || !e.data) {
       return;
     }
     if (e.data.insextInitResponse) {
@@ -74,19 +93,27 @@
     }
   }
 
-  function openTrustpilot(e) {
+  async function openTrustpilot(e) {
     e.preventDefault();
     if (!state.recordId || !state.sfHost) {
       return;
     }
+    state.contextKey = "trustpilot_ctx_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    await chrome.storage.session.set({
+      [state.contextKey]: {
+        recordId: state.recordId,
+        objectType: "Account",
+        createdAt: Date.now()
+      }
+    });
     const fullUrl = chrome.runtime.getURL(getInspectUrl());
     window.open(fullUrl, "_blank", "noopener");
-    parent.postMessage({insextClosePopup: true}, "*");
+    postToParent({insextClosePopup: true});
   }
 
   function closePopup(e) {
     e.preventDefault();
-    parent.postMessage({insextClosePopup: true}, "*");
+    postToParent({insextClosePopup: true});
   }
 
   els.openBtn.addEventListener("click", openTrustpilot);

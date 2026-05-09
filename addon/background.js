@@ -1,7 +1,53 @@
 
 let sfHost;
+const ALLOWED_MESSAGES = new Set(["getSfHost", "getSession", "createWindow", "reloadPage"]);
+const ALLOWED_SF_DOMAINS = [
+  ".salesforce.com",
+  ".salesforce-setup.com",
+  ".force.com",
+  ".cloudforce.com",
+  ".visualforce.com",
+  ".sfcrmapps.cn",
+  ".sfcrmproducts.cn",
+  ".salesforce.mil",
+  ".force.mil",
+  ".cloudforce.mil",
+  ".visualforce.mil",
+  ".crmforce.mil",
+  ".force.com.mcas.ms",
+  ".builder.salesforce-experience.com"
+];
+
+function isAllowedSalesforceHost(hostname) {
+  if (!hostname) {
+    return false;
+  }
+  return ALLOWED_SF_DOMAINS.some(domain => hostname === domain.slice(1) || hostname.endsWith(domain));
+}
+
+function isValidSender(request, sender) {
+  if (!request || !ALLOWED_MESSAGES.has(request.message) || sender.id !== chrome.runtime.id) {
+    return false;
+  }
+  if (request.message === "getSfHost") {
+    try {
+      const url = new URL(request.url);
+      return url.protocol === "https:" && isAllowedSalesforceHost(url.hostname);
+    } catch (e) {
+      return false;
+    }
+  }
+  if (request.message === "getSession") {
+    return typeof request.sfHost === "string" && isAllowedSalesforceHost(request.sfHost);
+  }
+  return true;
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (!isValidSender(request, sender)) {
+    sendResponse(null);
+    return false;
+  }
   // Perform cookie operations in the background page, because not all foreground pages have access to the cookie API.
   // Firefox does not support incognito split mode, so we use sender.tab.cookieStoreId to select the right cookie store.
   // Chrome does not support sender.tab.cookieStoreId, which means it is undefined, and we end up using the default cookie store according to incognito split mode.
