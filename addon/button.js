@@ -1,22 +1,42 @@
-// sfdcBody: normal Salesforce page
-// ApexCSIPage: Developer Console
-// auraLoadingBox: Lightning / Salesforce1
-// studioBody: Exoperience Builder
-// flowContainer: Flow Debugger
-const visualForceDomains = ["visualforce.com", "vf.force.com"];
-if (document.querySelector("body.sfdcBody, body.ApexCSIPage, #auraLoadingBox, #studioBody, #flowContainer") || visualForceDomains.filter(host => location.host.endsWith(host)).length > 0) {
-  // We are in a Salesforce org
-  chrome.runtime.sendMessage({message: "getSfHost", url: location.href}, sfHost => {
-    if (sfHost) {
-      initButton(sfHost, false);
-      let script = document.createElement("script");
-      script.src = chrome.runtime.getURL("inject.js");
-      document.body.appendChild(script);
+// Content script is already scoped to Salesforce hosts by manifest.json.
+// Initialize robustly even if Salesforce DOM structure changes.
+{
+  let started = false;
+  const start = sfHost => {
+    if (started || !document.body) {
+      return;
     }
-  });
+    started = true;
+    initButton(sfHost || location.hostname, false);
+    let script = document.createElement("script");
+    script.src = chrome.runtime.getURL("inject.js");
+    document.body.appendChild(script);
+  };
+
+  const boot = () => {
+    chrome.runtime.sendMessage({message: "getSfHost", url: location.href}, sfHost => {
+      // If security checks block or worker is sleeping, continue with page hostname.
+      if (chrome.runtime.lastError || !sfHost) {
+        start(location.hostname);
+        return;
+      }
+      start(sfHost);
+    });
+    // Safety timeout: never block rendering the button waiting for async response.
+    setTimeout(() => start(location.hostname), 800);
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, {once: true});
+  } else {
+    boot();
+  }
 }
 
 function initButton(sfHost, inInspector) {
+  if (document.getElementById("tp-insext")) {
+    return;
+  }
   const extensionOrigin = new URL(chrome.runtime.getURL("")).origin;
   let rootEl = document.createElement("div");
   rootEl.id = "tp-insext";
