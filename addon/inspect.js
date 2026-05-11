@@ -2158,12 +2158,14 @@ class TrustpilotPanel extends React.Component {
     let previewTemplateId = templates.find(template => template.templateId)?.templateId || "";
     let preview = model.buildTrustpilotPreview(previewTemplateId);
     let trustpilotBusinessUserId = model.getTrustpilotBusinessUserId();
+    let previewTimestamp = Date.now();
+    let previewReferenceNumber = (preview.referenceBaseId ? preview.referenceBaseId + "_" + previewTimestamp : "");
     let payloadPreview = {
       headers: {"x-business-user-id": trustpilotBusinessUserId || "(not set)"},
       replyTo: preview.replyTo || "",
       locale: preview.locale,
       locationId: preview.communicationId || "",
-      referenceNumber: preview.referenceBaseId,
+      referenceNumber: previewReferenceNumber,
       consumerName: preview.recipientName,
       consumerEmail: preview.recipientEmail,
       type: "email",
