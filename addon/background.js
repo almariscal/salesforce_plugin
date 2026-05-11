@@ -4,12 +4,18 @@ const ALLOWED_MESSAGES = new Set(["getSfHost", "getSession", "createWindow", "re
 const ALLOWED_SF_DOMAINS = [
   ".salesforce.com",
   ".salesforce-setup.com",
+  ".visual.force.com",
+  ".vf.force.com",
+  ".lightning.force.com",
   ".force.com",
   ".cloudforce.com",
   ".visualforce.com",
   ".sfcrmapps.cn",
   ".sfcrmproducts.cn",
   ".salesforce.mil",
+  ".visual.force.mil",
+  ".vf.force.mil",
+  ".lightning.force.mil",
   ".force.mil",
   ".cloudforce.mil",
   ".visualforce.mil",
@@ -141,8 +147,8 @@ chrome.commands?.onCommand.addListener((command) => {
 chrome.runtime.onInstalled.addListener(({reason}) => {
   if (reason === "install") {
     chrome.tabs.create({
-      url: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/welcome/"
+      url: chrome.runtime.getURL("welcome.html")
     });
   }
 });
-chrome.runtime.setUninstallURL("https://forms.gle/y7LbTNsFqEqSrtyc6");
+chrome.runtime.setUninstallURL("");
