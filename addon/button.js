@@ -28,6 +28,12 @@ function initButton(sfHost, inInspector) {
   btn.tabIndex = 0;
   btn.accessKey = "n";
   btn.title = "ATC Trustpilot Sender (Alt+N / Shift+Alt+N)";
+  // Immediate fallback style so button is visible even if popup handshake fails.
+  rootEl.style.top = "260px";
+  rootEl.style.right = "0";
+  btn.classList.add("insext-btn-vertical");
+  btn.textContent = "n";
+  btn.setAttribute("aria-label", "ATC Trustpilot Sender");
   rootEl.appendChild(btn);
   loadPopup(sfHost);
   document.body.appendChild(rootEl);

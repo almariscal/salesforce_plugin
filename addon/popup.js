@@ -44,10 +44,7 @@
   }
 
   function postToParent(payload) {
-    if (!parentOrigin) {
-      return;
-    }
-    parent.postMessage(payload, parentOrigin);
+    parent.postMessage(payload, parentOrigin || "*");
   }
 
   function render() {
@@ -79,7 +76,10 @@
   }
 
   function onMessage(e) {
-    if (!parentOrigin || e.source !== parent || e.origin !== parentOrigin || !e.data) {
+    if (e.source !== parent || !e.data) {
+      return;
+    }
+    if (parentOrigin && e.origin !== parentOrigin) {
       return;
     }
     if (e.data.insextInitResponse) {
