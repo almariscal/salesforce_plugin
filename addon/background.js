@@ -32,7 +32,11 @@ function isAllowedSalesforceHost(hostname) {
 }
 
 function isValidSender(request, sender) {
-  if (!request || !ALLOWED_MESSAGES.has(request.message) || sender.id !== chrome.runtime.id) {
+  if (!request || !ALLOWED_MESSAGES.has(request.message)) {
+    return false;
+  }
+  // In some Chrome contexts sender.id may be undefined for valid extension-origin messages.
+  if (sender?.id && sender.id !== chrome.runtime.id) {
     return false;
   }
   if (request.message === "getSfHost") {
@@ -74,12 +78,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const [orgId] = cookie.value.split("!");
       const orderedDomains = ["salesforce.com", "cloudforce.com", "salesforce.mil", "cloudforce.mil", "sfcrmproducts.cn", "force.com"];
 
-      orderedDomains.forEach(currentDomain => {
-        chrome.cookies.getAll({name: "sid", domain: currentDomain, secure: true, storeId: sender.tab.cookieStoreId}, cookies => {
+      let responded = false;
+      let pending = orderedDomains.length;
+      const respondOnce = value => {
+        if (!responded) {
+          responded = true;
+          sendResponse(value);
+        }
+      };
 
+      orderedDomains.forEach(domain => {
+        chrome.cookies.getAll({name: "sid", domain, secure: true, storeId: sender.tab.cookieStoreId}, cookies => {
           let sessionCookie = cookies.find(c => c.value.startsWith(orgId + "!") && c.domain != "help.salesforce.com");
           if (sessionCookie) {
-            sendResponse(sessionCookie.domain);
+            respondOnce(sessionCookie.domain);
+            return;
+          }
+          pending -= 1;
+          if (pending === 0) {
+            // Guaranteed fallback so content script can continue rendering.
+            respondOnce(currentDomain);
           }
         });
       });
