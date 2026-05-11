@@ -98,17 +98,28 @@
     if (!state.recordId || !state.sfHost) {
       return;
     }
-    state.contextKey = "trustpilot_ctx_" + Date.now() + "_" + Math.random().toString(36).slice(2);
-    await chrome.storage.session.set({
-      [state.contextKey]: {
-        recordId: state.recordId,
-        objectType: "Account",
-        createdAt: Date.now()
-      }
-    });
-    const fullUrl = chrome.runtime.getURL(getInspectUrl());
-    window.open(fullUrl, "_blank", "noopener");
-    postToParent({insextClosePopup: true});
+    try {
+      state.contextKey = "trustpilot_ctx_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+      await chrome.storage.session.set({
+        [state.contextKey]: {
+          recordId: state.recordId,
+          objectType: "Account",
+          createdAt: Date.now()
+        }
+      });
+      const fullUrl = chrome.runtime.getURL(getInspectUrl());
+      window.open(fullUrl, "_blank", "noopener");
+      postToParent({insextClosePopup: true});
+    } catch (err) {
+      // Fallback path in case storage.session is not available.
+      const args = new URLSearchParams();
+      args.set("host", state.sfHost || "");
+      args.set("objectType", "Account");
+      args.set("recordId", state.recordId);
+      const fallbackUrl = chrome.runtime.getURL("inspect.html?" + args.toString());
+      window.open(fallbackUrl, "_blank", "noopener");
+      postToParent({insextClosePopup: true});
+    }
   }
 
   function closePopup(e) {

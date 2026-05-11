@@ -7,20 +7,22 @@
 
 #tp-insext .insext-popup {
     box-sizing: border-box;
-    width: 280px;
+    width: min(360px, calc(100vw - 48px));
     height: 450px;
+    max-height: 78vh;
     position:absolute;
-    background-color: #ffffff;
-    border-radius: 4px;
+    background: #ffffff;
+    border-radius: 12px;
     z-index: 1;
-    border: 1px solid #d8dde6;
+    border: 1px solid #d1d9e6;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.22);
+    overflow: hidden;
     display: none;
 }
 
 #tp-insext .insext-popup-vertical {
     right: 0%;
     border-top-right-radius: 0;
-    box-shadow: 0 -2px 2px 0 rgba(0,0,0,.16);
 }
 
 #tp-insext .insext-popup-vertical-up {
@@ -72,7 +74,7 @@
     border-right-style: none;
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
-    box-shadow: -2px 0 2px #a0a6ab;
+    box-shadow: -4px 6px 14px rgba(15, 23, 42, 0.22);
 }
 #tp-insext .insext-btn-horizontal {
     height: 15px;

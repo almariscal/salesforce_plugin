@@ -212,6 +212,18 @@ function initButton(sfHost, inInspector) {
 
     let popupSrc = chrome.runtime.getURL("popup.html?host=" + sfHost);
     let popupEl = document.createElement("iframe");
+    function positionPopupInViewport() {
+      const margin = 12;
+      const rootTop = rootEl.getBoundingClientRect().top;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const popupHeight = Math.min(450, Math.max(320, Math.floor(viewportHeight * 0.78)));
+      const desiredTop = Math.max(
+        margin,
+        Math.min(viewportHeight - popupHeight - margin, rootTop - popupHeight / 2 + 20)
+      );
+      popupEl.style.height = popupHeight + "px";
+      popupEl.style.top = (desiredTop - rootTop) + "px";
+    }
     function getOrientation(source) {
       const o = (source === "localStorage")
         ? localStorage.getItem("popupArrowOrientation")
@@ -315,6 +327,7 @@ function initButton(sfHost, inInspector) {
       });
     }
     function openPopup() {
+      positionPopupInViewport();
       let activeContentElem = document.querySelector("div.windowViewMode-normal.active, section.oneConsoleTab div.windowViewMode-maximized.active.lafPageHost");
       let isFieldsPresent = activeContentElem ? !!activeContentElem.querySelector("record_flexipage-record-field > div, records-record-layout-item > div, div .forcePageBlockItemView") : false;
       popupEl.contentWindow.postMessage({insextUpdateRecordId: true,
@@ -324,11 +337,13 @@ function initButton(sfHost, inInspector) {
       rootEl.classList.add("insext-active");
       // These event listeners are only enabled when the popup is active to avoid interfering with Salesforce when not using the inspector
       addEventListener("click", outsidePopupClick);
+      addEventListener("resize", positionPopupInViewport);
       popupEl.focus();
     }
     function closePopup() {
       rootEl.classList.remove("insext-active");
       removeEventListener("click", outsidePopupClick);
+      removeEventListener("resize", positionPopupInViewport);
       popupEl.blur();
     }
     function togglePopup(openCondition, closeCondition = !openCondition) {
